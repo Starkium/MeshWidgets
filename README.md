@@ -11,7 +11,7 @@ Includes:
 
 Requirements:
 
- * UE 4.20
+ * UE 4.25
  * UV hit testing project setting (Physics > Optimization > Support UV From Hit Results) ticked
 
 Installation:
