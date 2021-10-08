@@ -11,10 +11,10 @@ Includes:
 
 Requirements:
 
- * UE 4.20
+ * UE 4.25
  * UV hit testing project setting (Physics > Optimization > Support UV From Hit Results) ticked
 
 Installation:
 
  * C++: Regenerate project files and add to your Build.cs
- * Blueprint only: Copy Plugins folder to your project. (Binary for drag&drop built for 4.20. USE AT OWN RISK generally don't run random binaries you got from the internet)
+ * Blueprint only: did not package binary for this branch
