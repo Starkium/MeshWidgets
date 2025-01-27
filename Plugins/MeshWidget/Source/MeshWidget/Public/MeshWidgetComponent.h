@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WidgetComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/Engine.h"
+#include "EngineGlobals.h"
 
 #include "MeshWidgetComponent.generated.h"
 
@@ -51,11 +54,12 @@ public:
 	// End UObject
 
 	// Begin MeshComponent
-	virtual UMaterialInterface* GetMaterial(int32 MaterialIndex) const override;
+	//virtual UMaterialInterface* GetMaterial(int32 MaterialIndex) const override;
 	// End MeshComponent
 	virtual UMaterialInterface* GetBaseMaterial() const;
 
-	FActorComponentInstanceData* GetComponentInstanceData() const override;
+	virtual TStructOnScope < FActorComponentInstanceData > GetComponentInstanceData() const;
+
 	
 	void ApplyComponentInstanceData(class FMeshWidgetComponentInstanceData* WidgetInstanceData);
 

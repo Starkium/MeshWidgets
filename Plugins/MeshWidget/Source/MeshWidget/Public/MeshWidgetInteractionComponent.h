@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Framework/Application/SlateUser.h"
 #include "Components/WidgetComponent.h"
 #include "Components/WidgetInteractionComponent.h"
 #include "MeshWidgetComponent.h"
 
 #include "MeshWidgetInteractionComponent.generated.h"
 
+class FSlateVirtualUserHandle;
 class UPrimitiveComponent;
 class AActor;
 
@@ -179,7 +181,7 @@ private:
 	 * the mouse and keyboard focus input (the viewport), so that things like the player controller recieve
 	 * standard hardware input.
 	 */
-	TSharedPtr<FSlateVirtualUser> VirtualUser;
+	TSharedPtr<FSlateVirtualUserHandle> VirtualUser;
 
 public:
 

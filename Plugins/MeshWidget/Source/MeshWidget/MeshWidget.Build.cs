@@ -6,12 +6,8 @@ public class MeshWidget : ModuleRules
 {
 	public MeshWidget(ReadOnlyTargetRules Target) : base(Target)
 	{
-        bEnforceIWYU = true;
 
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        MinFilesUsingPrecompiledHeaderOverride = 1;
-        bFasterWithoutUnity = true;
+        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
             new string[] {
@@ -22,17 +18,17 @@ public class MeshWidget : ModuleRules
                 "Slate",
                 "SlateCore",
                 "SlateRHIRenderer",
-                "UnrealEd",
+                //"UnrealEd",
                 "UMG",
                 "RenderCore",
                 "RHI"
             }
         );
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		//PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		 PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject","Engine", "Slate", "SlateCore", "SlateRHIRenderer", "UMG" });
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

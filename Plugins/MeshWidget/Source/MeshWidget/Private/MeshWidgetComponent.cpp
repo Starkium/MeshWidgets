@@ -2,12 +2,12 @@
 
 #include "MeshWidgetComponent.h"
 
-#include "HittestGrid.h"
+#include "Input/HittestGrid.h"
 #include "Runtime/SlateRHIRenderer/Public/Interfaces/ISlateRHIRendererModule.h"
 #include "Runtime/SlateRHIRenderer/Public/Interfaces/ISlate3DRenderer.h"
 #include "DynamicMeshBuilder.h"
 #include "Scalability.h"
-#include "WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "Slate/WidgetRenderer.h"
 #include "Widgets/Layout/SPopup.h"
@@ -15,11 +15,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Runtime/Engine/Public/Materials/MaterialInstanceDynamic.h"
 #include "Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h"
 #include "Runtime/SlateCore/Public/Widgets/SWidget.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "Runtime/RenderCore/Public/RenderingThread.h"
+#include "Components/SceneComponent.h"
 
 
 DECLARE_CYCLE_STAT(TEXT("3DHitTesting"), STAT_Slate3DHitTesting, STATGROUP_Slate);
@@ -44,7 +45,7 @@ UMeshWidgetComponent::UMeshWidgetComponent( const FObjectInitializer& PCIP )
 	PrimaryComponentTick.bCanEverTick = true;
 	bTickInEditor = true;
 
-	RelativeRotation = FRotator::ZeroRotator;
+	SetRelativeRotation(FRotator::ZeroRotator);
 
 	BodyInstance.SetCollisionProfileName(FName(TEXT("UI")));
 
@@ -199,7 +200,7 @@ bool UMeshWidgetComponent::ShouldDrawWidget() const
 	if ( IsVisible() )
 	{
 		// If we don't tick when off-screen, don't bother ticking if it hasn't been rendered recently
-		if ( TickWhenOffscreen || GetWorld()->TimeSince(LastRenderTime) <= RenderTimeThreshold )
+		if ( TickWhenOffscreen || GetWorld()->TimeSince(GetLastRenderTime()) <= RenderTimeThreshold )
 		{
 			if ( GetWorld()->TimeSince(LastWidgetRenderTime) >= RedrawTime )
 			{
@@ -259,8 +260,8 @@ void UMeshWidgetComponent::DrawWidgetToRenderTarget(float DeltaTime)
 	bRedrawRequested = false;
 
 	WidgetRenderer->DrawWindow(
-		RenderTarget,
-		HitTestGrid.ToSharedRef(),
+		GetRenderTarget(),
+		HitTestGrid.ToSharedRef().Get(),
 		SlateWindow.ToSharedRef(),
 		DrawScale,
 		CurrentDrawSize,
@@ -288,9 +289,10 @@ public:
 	{
 		FSceneComponentInstanceData::AddReferencedObjects(Collector);
 
-		UClass* WidgetUClass = *WidgetClass;
+		TObjectPtr<UClass> WidgetUClass = *WidgetClass;
+		TObjectPtr<UTextureRenderTarget2D> RenderTargetPtr = RenderTarget;
 		Collector.AddReferencedObject(WidgetUClass);
-		Collector.AddReferencedObject(RenderTarget);
+		Collector.AddReferencedObject(RenderTargetPtr);
 	}
 
 public:
@@ -298,9 +300,9 @@ public:
 	UTextureRenderTarget2D* RenderTarget;
 };
 
-FActorComponentInstanceData* UMeshWidgetComponent::GetComponentInstanceData() const
+TStructOnScope < FActorComponentInstanceData > UMeshWidgetComponent::GetComponentInstanceData() const
 {
-	return new FMeshWidgetComponentInstanceData( this );
+	return MakeStructOnScope< FActorComponentInstanceData >(this);
 }
 
 void UMeshWidgetComponent::ApplyComponentInstanceData(FMeshWidgetComponentInstanceData* WidgetInstanceData)
@@ -327,7 +329,7 @@ void UMeshWidgetComponent::ApplyComponentInstanceData(FMeshWidgetComponentInstan
 #if WITH_EDITORONLY_DATA
 void UMeshWidgetComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UProperty* Property = PropertyChangedEvent.MemberProperty;
+	FProperty* Property = PropertyChangedEvent.MemberProperty;
 
 	if( Property && PropertyChangedEvent.ChangeType != EPropertyChangeType::Interactive )
 	{
@@ -611,7 +613,8 @@ TArray<FWidgetAndPointer> UMeshWidgetComponent::GetHitWidgetPath(const FHitResul
 
 		for( FWidgetAndPointer& ArrangedWidget : ArrangedWidgets )
 		{
-			ArrangedWidget.PointerPosition = VirtualMouseCoordinate;
+			//ArrangedWidget.PointerPosition = VirtualMouseCoordinate;
+			ArrangedWidget.SetPointerPosition(VirtualMouseCoordinate.Get()); //did I do this right?
 		}
 	}
 
@@ -705,41 +708,41 @@ void UMeshWidgetComponent::PostLoad()
 {
 	Super::PostLoad();
 
-	if ( GetLinkerUE4Version() < VER_UE4_ADD_PIVOT_TO_WIDGET_COMPONENT )
+	if ( GetLinkerUEVersion() < VER_UE4_ADD_PIVOT_TO_WIDGET_COMPONENT )
 	{
 		Pivot = FVector2D(0, 0);
 	}
 
-	if ( GetLinkerUE4Version() < VER_UE4_ADD_BLEND_MODE_TO_WIDGET_COMPONENT )
+	if ( GetLinkerUEVersion() < VER_UE4_ADD_BLEND_MODE_TO_WIDGET_COMPONENT )
 	{
 		BlendMode = bIsOpaque_DEPRECATED ? EWidgetBlendMode::Opaque : EWidgetBlendMode::Transparent;
 	}
 
-	if( GetLinkerUE4Version() < VER_UE4_FIXED_DEFAULT_ORIENTATION_OF_WIDGET_COMPONENT )
+	if( GetLinkerUEVersion() < VER_UE4_FIXED_DEFAULT_ORIENTATION_OF_WIDGET_COMPONENT )
 	{	
 		// This indicates the value does not differ from the default.  In some rare cases this could cause incorrect rotation for anyone who directly set a value of 0,0,0 for rotation
 		// However due to delta serialization we have no way to know if this value is actually different from the default so assume it is not.
-		if( RelativeRotation == FRotator::ZeroRotator )
+		if( GetRelativeRotation() == FRotator::ZeroRotator )
 		{
-			RelativeRotation = FRotator(0.f, 0.f, 90.f);
+			SetRelativeRotation(FRotator(0.f, 0.f, 90.f));
 		}
 		bUseLegacyRotation = true;
 	}
 }
 
-UMaterialInterface* UMeshWidgetComponent::GetMaterial(int32 MaterialIndex) const
-{
-	if ( OverrideMaterials.IsValidIndex(MaterialIndex) && ( OverrideMaterials[MaterialIndex] != nullptr ) )
-	{
-		return OverrideMaterials[MaterialIndex];
-	}
-	else
-	{
-		return GetBaseMaterial();
-	}
-
-	return nullptr;
-}
+//UMaterialInterface* UMeshWidgetComponent::GetMaterial(int32 MaterialIndex) const
+//{
+//	if ( OverrideMaterials.IsValidIndex(MaterialIndex) && ( OverrideMaterials[MaterialIndex] != nullptr ) )
+//	{
+//		return OverrideMaterials[MaterialIndex];
+//	}
+//	else
+//	{
+//		return GetBaseMaterial();
+//	}
+//
+//	return nullptr;
+//}
 
 UMaterialInterface* UMeshWidgetComponent::GetBaseMaterial() const
 {

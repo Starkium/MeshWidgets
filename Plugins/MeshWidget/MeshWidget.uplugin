@@ -13,13 +13,19 @@
 	"EnabledByDefault" : true,
 	"CanContainContent" : false,
 	"IsBetaVersion" : false,
-	"Installed" : false,
+	"Installed" : true,
 	"Modules" :
 	[
 		{
-			"Name" : "MeshWidget",
-			"Type" : "Runtime",
-			"LoadingPhase" : "Default"
+			"Name": "MeshWidget",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Linux",
+				"Android",
+				"Mac"
+			]
 		}
 	]
 }
