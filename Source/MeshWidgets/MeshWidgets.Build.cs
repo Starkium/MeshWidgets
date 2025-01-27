@@ -4,12 +4,7 @@ public class MeshWidgets : ModuleRules
 {
 	public MeshWidgets(ReadOnlyTargetRules Target) : base(Target)
 	{
-        bEnforceIWYU = true;
-
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        MinFilesUsingPrecompiledHeaderOverride = 1;
-        bFasterWithoutUnity = true;
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
             new string[] {

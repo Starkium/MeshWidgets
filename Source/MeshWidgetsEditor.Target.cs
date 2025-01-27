@@ -6,7 +6,9 @@ public class MeshWidgetsEditorTarget : TargetRules
 {
 	public MeshWidgetsEditorTarget(TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Editor;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+        Type = TargetType.Editor;
+        IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
 
 		ExtraModuleNames.AddRange( new string[] { "MeshWidgets" } );
 	}
